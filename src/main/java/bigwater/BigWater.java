@@ -7,12 +7,14 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +39,10 @@ public class BigWater implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		Identifier rekindled = Identifier.fromNamespaceAndPath(MOD_ID,"rekindled");
+		Identifier stylized = Identifier.fromNamespaceAndPath(MOD_ID,"stylized");
 		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
 			ResourceLoader.registerBuiltinPack(rekindled, container, PackActivationType.DEFAULT_ENABLED);
+			ResourceLoader.registerBuiltinPack(stylized, container, PackActivationType.NORMAL);
 		});
 
 		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(
@@ -53,13 +57,13 @@ public class BigWater implements ClientModInitializer {
 							JsonObject json = GsonHelper.parse(streamReader);
 
 							JsonObject settings = json.get("textureScale").getAsJsonObject();
-							LOGGER.info("[BigWater] Parsing data...");
+							//LOGGER.info("[BigWater] Parsing data...");
 							for (String key : settings.keySet()){
 								int value = settings.get(key).getAsInt();
-								LOGGER.info("-> " + key + ": " + value);
+								//LOGGER.info("-> " + key + ": " + value);
 								textureScales.put(key, new Tuple<>(value, 1.0f/value));
 							}
-							LOGGER.info("Read resource pack provided settings");
+							LOGGER.info("[BigWater] Read resource pack provided settings");
 
 						} catch(Exception e) {
 							LOGGER.error("[BigWater] Failed to read resource pack settings");
@@ -68,8 +72,6 @@ public class BigWater implements ClientModInitializer {
 					}
 				}
 		);
-
-		LOGGER.info("[BigWater] Initialized");
 	}
 
 	public static Tuple<Integer, Float> getTextureScale(String identifier){
@@ -95,5 +97,13 @@ public class BigWater implements ClientModInitializer {
 	private static String provider( String filename ) {
 		return "# Default scale for textures if resourcepacks don't provide any:\n"
 				+ VAR_DEFAULTSCALE + "=1";
+	}
+
+	public static float modCoord(float src, int relativePos, float origin, float sideLength, float scalant){
+		return (((src + (sideLength * relativePos) - origin) * scalant)) + origin;
+	}
+
+	public static int reverseCoord(int pos, int textureScale){
+		return (textureScale - pos) - 1;
 	}
 }

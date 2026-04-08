@@ -4,6 +4,7 @@ import bigwater.access.FluidRendererAccess;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
@@ -25,6 +26,9 @@ public class FluidRendererMixin implements FluidRendererAccess {
     @Unique
     Vec3 flow;
 
+    @Unique
+    Direction direction;
+
     @Override
     public void setPos(BlockPos pos){this.pos = pos;}
 
@@ -43,6 +47,12 @@ public class FluidRendererMixin implements FluidRendererAccess {
     @Override
     public Vec3 getFlow(){return flow;}
 
+    @Override
+    public void setDirection(Direction dir){direction = dir;}
+
+    @Override
+    public Direction getDirection(){return direction;}
+
 
     @Inject(
             at = @At(
@@ -50,7 +60,7 @@ public class FluidRendererMixin implements FluidRendererAccess {
             ),
             method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
     )
-    public void tesselateInject(BlockAndTintGetter level, BlockPos pos, FluidRenderer.Output output, BlockState blockState, FluidState fluidState, CallbackInfo ci){
+    public void tesselateHeadInject(BlockAndTintGetter level, BlockPos pos, FluidRenderer.Output output, BlockState blockState, FluidState fluidState, CallbackInfo ci){
         setPos(pos);
         setFluidState(fluidState);
         setFlow(fluidState.getFlow(level, pos));

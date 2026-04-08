@@ -3,13 +3,13 @@
 	"id": "bigwater",
 	"version": "${version}",
 	"name": "Big Water",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Larger-scale fluid textures",
 	"authors": [
-		"Me!"
+		"Tec"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/Tectato/",
+		"sources": "https://github.com/Tectato/BigWater"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/bigwater/icon.png",
@@ -23,7 +23,8 @@
 		]
 	},
 	"mixins": [
-		"bigwater.mixins.json"
+		"bigwater.mixins.json",
+		"bigwater.extra.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.18.6",

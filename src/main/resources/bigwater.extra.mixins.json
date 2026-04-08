@@ -1,5 +1,5 @@
 {
-  "required": true,
+  "required": false,
   "package": "bigwater.mixin",
   "compatibilityLevel": "JAVA_25",
   "injectors": {
@@ -9,7 +9,7 @@
     "requireAnnotations": true
   },
   "client": [
-    "FluidRendererMixin",
-    "FluidRendererRedirect"
+    "SodiumFluidRendererMixin",
+    "SodiumFluidRendererRedirect"
   ]
 }
