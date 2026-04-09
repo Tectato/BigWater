@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class BigWater implements ClientModInitializer {
@@ -35,6 +37,7 @@ public class BigWater implements ClientModInitializer {
 	public static float defaultScalant = 1.0f/defaultTextureScale;
 
 	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
+	private static List<String> failedLookups = new LinkedList<>();
 
 	@Override
 	public void onInitializeClient() {
@@ -62,6 +65,10 @@ public class BigWater implements ClientModInitializer {
 								int value = settings.get(key).getAsInt();
 								//LOGGER.info("-> " + key + ": " + value);
 								textureScales.put(key, new Tuple<>(value, 1.0f/value));
+								String[] split = key.split(":");
+								if (split.length > 1) {
+									textureScales.put(split[0] + ":flowing_" + split[1], new Tuple<>(value, 1.0f / value));
+								}
 							}
 							LOGGER.info("[BigWater] Read resource pack provided settings");
 
@@ -77,6 +84,10 @@ public class BigWater implements ClientModInitializer {
 	public static Tuple<Integer, Float> getTextureScale(String identifier){
 		if (textureScales.containsKey(identifier)){
 			return textureScales.get(identifier);
+		}
+		if (!failedLookups.contains(identifier)){
+			failedLookups.add(identifier);
+			LOGGER.info("[BigWater] Scale lookup failed for " + identifier + ", using config default");
 		}
 		return new Tuple<>(defaultTextureScale, defaultScalant);
 	}
@@ -97,6 +108,13 @@ public class BigWater implements ClientModInitializer {
 	private static String provider( String filename ) {
 		return "# Default scale for textures if resourcepacks don't provide any:\n"
 				+ VAR_DEFAULTSCALE + "=1";
+	}
+
+	public static int getTexPos(int worldPos, int textureScale, boolean reverseCoords){
+		int texPos = worldPos % textureScale;
+		if (texPos < 0) texPos = textureScale + texPos;
+		if (reverseCoords) texPos = reverseCoord(texPos, textureScale);
+		return texPos;
 	}
 
 	public static float modCoord(float src, int relativePos, float origin, float sideLength, float scalant){

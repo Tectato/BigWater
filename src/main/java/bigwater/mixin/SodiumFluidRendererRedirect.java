@@ -24,6 +24,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import static bigwater.BigWater.getTexPos;
+
 @Mixin(DefaultFluidRenderer.class)
 abstract class SodiumFluidRendererRedirect {
     @Environment(EnvType.CLIENT)
@@ -45,23 +47,25 @@ abstract class SodiumFluidRendererRedirect {
         boolean mirrorU = false;
         boolean mirrorV = false;
         Vec3 flow = ((FluidRendererAccess)instance).getFlow();
-        int posU;
-        int posV;
-        if (flow.x != 0.0d || flow.z != 0.0d) {
+        int uPos;
+        int vPos;
+        if (flow.x != 0.0d || flow.z != 0.0d) { // Flowing
+            mirrorU = flow.x == 0.0d;
+            mirrorV = false;
+        } else { // Still
             mirrorU = true;
-            //mirrorV = false;
         }
         if (Math.abs(flow.x) > 0.5d) {
-            posU = pos.getZ();
-            posV = pos.getX();
+            uPos = pos.getZ();
+            vPos = pos.getX();
         } else if (flow.x != 0.0d && flow.z != 0.0d) {
-            posU = (int) (pos.getX() + (Math.signum(flow.z)) * pos.getZ());
-            posV = (int) (pos.getZ() + (Math.signum(flow.x)) * pos.getX());
+            uPos = (int) (pos.getX() + (Math.signum(flow.z)) * pos.getZ());
+            vPos = (int) (pos.getZ() + (Math.signum(flow.x)) * pos.getX());
         } else {
-            posU = pos.getX();
-            posV = pos.getZ();
+            uPos = pos.getX();
+            vPos = pos.getZ();
         }
-        writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(posU, textureScale, true ^ mirrorU), getTexPos(posV, textureScale, false ^ mirrorV), scaleData);
+        writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(uPos, textureScale, true ^ mirrorU), getTexPos(vPos, textureScale, false ^ mirrorV), scaleData);
     }
 
     @Redirect(
@@ -126,12 +130,7 @@ abstract class SodiumFluidRendererRedirect {
 
 
 
-    private int getTexPos(int worldPos, int textureScale, boolean reverseCoords){
-        int texPos = worldPos % textureScale;
-        if (texPos < 0) texPos = textureScale + texPos;
-        if (reverseCoords) texPos = BigWater.reverseCoord(texPos, textureScale);
-        return texPos;
-    }
+
 
 
     private void writeFlatQuad(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip, int uPos, int vPos, Tuple<Integer, Float> scaleData) {
@@ -145,9 +144,9 @@ abstract class SodiumFluidRendererRedirect {
         }*/
 
         float scalant = scaleData.getB();
-        float uMin = quad.getTexU(0);
+        float uMin = quad.getTexU(1);
         float vMin = quad.getTexV(0);
-        float uMax = quad.getTexU(2);
+        float uMax = quad.getTexU(3);
         float vMax = quad.getTexV(2);
         float width = uMax - uMin;
         float height = vMax - vMin;

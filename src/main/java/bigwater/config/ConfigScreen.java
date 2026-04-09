@@ -1,6 +1,7 @@
 package bigwater.config;
 
 import bigwater.BigWater;
+import javafx.scene.input.KeyCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -34,6 +35,7 @@ public class ConfigScreen extends Screen {
             BigWater.setConfig(BigWater.VAR_DEFAULTSCALE, String.valueOf(Integer.valueOf(scaleInput.getValue())));
             BigWater.writeConfig();
             minecraft.setScreen(parent);
+            minecraft.levelRenderer.allChanged();
         }
     }
 
