@@ -1,0 +1,15 @@
+{
+  "pack": {
+    "pack_format": 34,
+    "supported_formats": {
+	"min_inclusive": 13,
+	"max_inclusive": 64
+    },
+    "min_format": [13, 0],
+    "max_format": [100, 50],
+    "description": "By Tec"
+  },
+  "meta": {
+    "game_version": "26.1"
+  }
+}

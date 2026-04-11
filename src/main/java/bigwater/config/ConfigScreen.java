@@ -65,7 +65,7 @@ public class ConfigScreen extends Screen {
     public void extractRenderState(final GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         //renderBackground(context, mouseX, mouseY, delta);
         backButton.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.text(font, "Standard texture scale:", 8, scaleInput.getY() + 4, 0xFFFFFFFF);
+        graphics.text(font, "Standard texture scale:", 32, scaleInput.getY() + 4, 0xFFFFFFFF);
         scaleInput.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 

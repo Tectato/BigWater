@@ -43,9 +43,11 @@ public class BigWater implements ClientModInitializer {
 	public void onInitializeClient() {
 		Identifier rekindled = Identifier.fromNamespaceAndPath(MOD_ID,"rekindled");
 		Identifier stylized = Identifier.fromNamespaceAndPath(MOD_ID,"stylized");
+		Identifier vanilla = Identifier.fromNamespaceAndPath(MOD_ID,"vanilla");
 		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
-			ResourceLoader.registerBuiltinPack(rekindled, container, PackActivationType.DEFAULT_ENABLED);
+			ResourceLoader.registerBuiltinPack(rekindled, container, PackActivationType.NORMAL);
 			ResourceLoader.registerBuiltinPack(stylized, container, PackActivationType.NORMAL);
+			ResourceLoader.registerBuiltinPack(vanilla, container, PackActivationType.DEFAULT_ENABLED);
 		});
 
 		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(

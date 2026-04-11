@@ -1,0 +1,9 @@
+{
+  id: "bigwater-vanilla",
+    version: 13,
+    capabilities: ["FileFilter", "DirFilter"],
+    conf: {
+        water: true,
+	lava: true
+    }
+}

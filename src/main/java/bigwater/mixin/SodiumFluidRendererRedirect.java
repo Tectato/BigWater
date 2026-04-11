@@ -59,7 +59,7 @@ abstract class SodiumFluidRendererRedirect {
             uPos = pos.getZ();
             vPos = pos.getX();
         } else if (flow.x != 0.0d && flow.z != 0.0d) {
-            uPos = (int) (pos.getX() + (Math.signum(flow.z)) * pos.getZ());
+            uPos = (int) (pos.getX() + (Math.signum(flow.z)) * pos.getZ()); // Doesn't work great, would appreciate other ideas
             vPos = (int) (pos.getZ() + (Math.signum(flow.x)) * pos.getX());
         } else {
             uPos = pos.getX();
