@@ -2,19 +2,21 @@ package bigwater;
 
 import bigwater.config.SimpleConfig;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.*;
 import net.fabricmc.api.ClientModInitializer;
 
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,8 @@ public class BigWater implements ClientModInitializer {
 	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
 	private static List<String> failedLookups = new LinkedList<>();
 
+	public static Map<String, TextureAtlasSprite> fluidTextures = HashMap.newHashMap(8);
+
 	@Override
 	public void onInitializeClient() {
 		Identifier rekindled = Identifier.fromNamespaceAndPath(MOD_ID,"rekindled");
@@ -64,10 +68,8 @@ public class BigWater implements ClientModInitializer {
 							JsonObject json = GsonHelper.parse(streamReader);
 
 							JsonObject settings = json.get("textureScale").getAsJsonObject();
-							//LOGGER.info("[BigWater] Parsing data...");
 							for (String key : settings.keySet()){
 								int value = settings.get(key).getAsInt();
-								//LOGGER.info("-> " + key + ": " + value);
 								textureScales.put(key, new Tuple<>(value, 1.0f/value));
 								String[] split = key.split(":");
 								if (split.length > 1) {
@@ -81,8 +83,25 @@ public class BigWater implements ClientModInitializer {
 							LOGGER.error(String.valueOf(e));
 						}
 					}
+
+					fluidTextures.clear();
+					checkCustomTextures("water"); // TODO: make this run for any registered fluids
+					checkCustomTextures("lava");
+
+					/*for(String key : fluidTextures.keySet()){
+						LOGGER.info("[BW] " + key + " -> " + fluidTextures.get(key));
+					}*/
 				}
 		);
+	}
+
+	private static void checkCustomTextures(String blockID){
+		TextureAtlasSprite stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_still"));
+		if (stillSprite.contents().name().toString().equals("minecraft:missingno")) stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_still"));
+		fluidTextures.put("minecraft:block/"+blockID+"_still", stillSprite);
+		TextureAtlasSprite flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_flow"));
+		if (flowSprite.contents().name().toString().equals("minecraft:missingno")) flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_flow"));
+		fluidTextures.put("minecraft:block/"+blockID+"_flow", flowSprite);
 	}
 
 	public static Tuple<Integer, Float> getTextureScale(String identifier){
@@ -97,6 +116,17 @@ public class BigWater implements ClientModInitializer {
 			LOGGER.info("[BigWater] Scale lookup failed for " + identifier + ", using config default");
 		}
 		return new Tuple<>(defaultTextureScale, defaultScalant);
+	}
+
+	public static TextureAtlasSprite getTexture(String identifier){
+		if (fluidTextures.containsKey(identifier)){
+			return fluidTextures.get(identifier);
+		}
+		if (!failedLookups.contains(identifier)){
+			failedLookups.add(identifier);
+			LOGGER.info("[BigWater] Texture lookup failed for " + identifier + ", using default");
+		}
+		return null;
 	}
 
 	public static void setConfig(String key, String value){

@@ -1,10 +1,13 @@
 package bigwater.mixin;
 
+import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.block.FluidRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.CardinalLighting;
@@ -120,5 +123,18 @@ public class FluidRendererMixin implements FluidRendererAccess {
                                         Direction faceDir
                                      ){
         setDirection(faceDir);
+    }
+
+    @ModifyExpressionValue(
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/resources/model/sprite/Material$Baked;sprite()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;"
+            ),
+            method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
+    )
+    public TextureAtlasSprite spriteReturnInject(TextureAtlasSprite original){
+        TextureAtlasSprite sprite = BigWater.getTexture(original.contents().name().toString());
+        if(sprite == null) return original;
+        return sprite;
     }
 }

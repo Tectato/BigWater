@@ -1,6 +1,8 @@
 package bigwater.mixin;
 
+import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.caffeinemc.mods.sodium.client.model.color.ColorProvider;
 import net.caffeinemc.mods.sodium.client.model.light.LightMode;
 import net.caffeinemc.mods.sodium.client.model.light.LightPipeline;
@@ -11,6 +13,7 @@ import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.TranslucentGeometryCollector;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
 import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -112,5 +115,18 @@ public class SodiumFluidRendererMixin implements FluidRendererAccess {
         int var35,
         Direction dir){
             setDirection(dir);
+    }
+
+    @ModifyExpressionValue(
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/resources/model/sprite/Material$Baked;sprite()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;"
+            ),
+            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
+    )
+    public TextureAtlasSprite spriteReturnInject(TextureAtlasSprite original){
+        TextureAtlasSprite sprite = BigWater.getTexture(original.contents().name().toString());
+        if(sprite == null) return original;
+        return sprite;
     }
 }
