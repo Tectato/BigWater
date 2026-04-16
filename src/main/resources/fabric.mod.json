@@ -23,13 +23,12 @@
 		]
 	},
 	"mixins": [
-		"bigwater.mixins.json",
 		"bigwater.extra.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.18.6",
-		"minecraft": "~26.1.1",
-		"java": ">=25",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
 		"fabric-api": "*"
 	}
 }

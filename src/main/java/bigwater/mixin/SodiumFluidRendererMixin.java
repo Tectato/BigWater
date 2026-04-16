@@ -2,7 +2,6 @@ package bigwater.mixin;
 
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.caffeinemc.mods.sodium.client.model.color.ColorProvider;
 import net.caffeinemc.mods.sodium.client.model.light.LightMode;
 import net.caffeinemc.mods.sodium.client.model.light.LightPipeline;
@@ -12,7 +11,6 @@ import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.DefaultFl
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.TranslucentGeometryCollector;
 import net.caffeinemc.mods.sodium.client.world.LevelSlice;
-import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,63 +68,58 @@ public class SodiumFluidRendererMixin implements FluidRendererAccess {
             at = @At(
                     value = "HEAD"
             ),
-            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
+            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;[Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V"
     )
-    public void renderHeadInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, FluidModel sprites, CallbackInfo ci){
+    public void renderHeadInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, TextureAtlasSprite[] sprites, CallbackInfo ci){
         setPos(blockPos);
         setFluidState(fluidState);
         setFlow(fluidState.getFlow(level, blockPos));
+
+        TextureAtlasSprite sprite0 = BigWater.getTexture(sprites[0].contents().name().toString());
+        if(sprite0 == null) sprite0 = sprites[0];
+        sprites[0] = sprite0;
+        TextureAtlasSprite sprite1 = BigWater.getTexture(sprites[1].contents().name().toString());
+        if(sprite1 == null) sprite1 = sprites[1];
+        sprites[1] = sprite1;
     }
 
     @Inject(
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/core/BlockPos$MutableBlockPos;setWithOffset(Lnet/minecraft/core/Vec3i;Lnet/minecraft/core/Direction;)Lnet/minecraft/core/BlockPos$MutableBlockPos;",
-                    ordinal = 5
+                    ordinal = 1
             ),
-            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V",
+            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;[Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V",
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    public void renderDirInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, FluidModel sprites, CallbackInfo ci,
+    public void renderDirInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, TextureAtlasSprite[] sprites, CallbackInfo ci,
                                 Fluid fluid,
-                                boolean  upVisible,
-        boolean downVisible,
-        boolean northSelfVisible,
-        boolean southSelfVisible,
-        boolean westSelfVisible,
-        boolean eastSelfVisible,
-        boolean northVisible,
-        boolean southVisible,
-        boolean westVisible,
-        boolean eastVisible,
-        boolean isWater,
-        float fluidHeight,
-        float northWestHeight,
-        float southWestHeight,
-        float southEastHeight,
-        float northEastHeight,
-        float yOffset,
-        ModelQuadViewMutable quad,
-        LightMode lightMode,
-        LightPipeline lighter,
-        boolean inwardsUpFaceVisible,
-        Direction[] var33,
-        int var34,
-        int var35,
-        Direction dir){
-            setDirection(dir);
-    }
-
-    @ModifyExpressionValue(
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/resources/model/sprite/Material$Baked;sprite()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;"
-            ),
-            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
-    )
-    public TextureAtlasSprite spriteReturnInject(TextureAtlasSprite original){
-        TextureAtlasSprite sprite = BigWater.getTexture(original.contents().name().toString());
-        if(sprite == null) return original;
-        return sprite;
+                                boolean upVisible,
+                                boolean downVisible,
+                                boolean northSelfVisible,
+                                boolean southSelfVisible,
+                                boolean westSelfVisible,
+                                boolean eastSelfVisible,
+                                boolean northVisible,
+                                boolean southVisible,
+                                boolean westVisible,
+                                boolean eastVisible,
+                                boolean isWater,
+                                float fluidHeight,
+                                float northWestHeight,
+                                float southWestHeight,
+                                float southEastHeight,
+                                float northEastHeight,
+                                float yOffset,
+                                ModelQuadViewMutable quad,
+                                LightMode lightMode,
+                                LightPipeline lighter,
+                                boolean inwardsUpFaceVisible,
+                                Direction[] var33,
+                                int var34,
+                                int var35,
+                                Direction dir
+                                ){
+        setDirection(dir);
     }
 }

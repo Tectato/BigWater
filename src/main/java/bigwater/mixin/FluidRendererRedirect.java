@@ -1,6 +1,6 @@
 package bigwater.mixin;
 
-import bigwater.BigWater;
+/*import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
@@ -146,4 +146,4 @@ abstract class FluidRendererRedirect {
 
 	@Shadow
 	private void addFace(final VertexConsumer builder, final float x0, final float y0, final float z0, final float u0, final float v0, final float x1, final float y1, final float z1, final float u1, final float v1, final float x2, final float y2, final float z2, final float u2, final float v2, final float x3, final float y3, final float z3, final float u3, final float v3, final int color, final int lightCoords, final boolean addBackFace){}
-}
+}*/

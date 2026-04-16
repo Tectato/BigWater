@@ -1,9 +1,9 @@
 package bigwater.config;
 
 import bigwater.BigWater;
-import javafx.scene.input.KeyCode;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,6 +21,11 @@ public class ConfigScreen extends Screen {
 
     protected ConfigScreen(Component title) {
         super(title);
+        setup();
+    }
+
+    protected ConfigScreen(Minecraft minecraft, Font font, Component title) {
+        super(minecraft, font, title);
         setup();
     }
 
@@ -69,14 +74,14 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(final GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+    public void render(final GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        super.render(graphics, mouseX, mouseY, delta);
         //renderBackground(context, mouseX, mouseY, delta);
-        backButton.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.text(font, "Standard texture scale:", 32, scaleInput.getY() + 4, 0xFFFFFFFF);
-        scaleInput.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.text(font, "Override pack-provided settings:", 32, overrideInput.getY() + 4, 0xFFFFFFFF);
-        overrideInput.extractRenderState(graphics, mouseX, mouseY, delta);
+        backButton.render(graphics, mouseX, mouseY, delta);
+        graphics.drawString(font, "Standard texture scale:", 32, scaleInput.getY() + 4, 0xFFFFFFFF);
+        scaleInput.render(graphics, mouseX, mouseY, delta);
+        graphics.drawString(font, "Override pack-provided settings:", 32, overrideInput.getY() + 4, 0xFFFFFFFF);
+        overrideInput.render(graphics, mouseX, mouseY, delta);
     }
 
     @Override

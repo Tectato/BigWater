@@ -56,7 +56,7 @@ public class BigWater implements ClientModInitializer {
 			ResourceLoader.registerBuiltinPack(vanilla, container, PackActivationType.DEFAULT_ENABLED);
 		});
 
-		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
 				Identifier.fromNamespaceAndPath(MOD_ID,"config"),
 				(ResourceManagerReloadListener) manager -> {
 					textureScales.clear();
