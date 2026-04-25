@@ -1,5 +1,5 @@
 {
-  id: "bigwater-vanilla",
+  id: "big_water_vanilla",
     version: 13,
     capabilities: ["FileFilter", "DirFilter"],
     conf: {
