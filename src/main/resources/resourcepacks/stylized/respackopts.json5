@@ -1,5 +1,5 @@
 {
-  id: "bigwater-stylized",
+  id: "big_water_stylized",
     version: 13,
     capabilities: ["FileFilter", "DirFilter"],
     conf: {
