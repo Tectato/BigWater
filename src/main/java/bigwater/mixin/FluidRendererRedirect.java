@@ -3,8 +3,6 @@ package bigwater.mixin;
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,8 +18,6 @@ import static bigwater.BigWater.getTexPos;
 
 @Mixin(FluidRenderer.class)
 abstract class FluidRendererRedirect {
-	@Environment(EnvType.CLIENT)
-
 	@Redirect(
 			at = @At(
 					value = "INVOKE",

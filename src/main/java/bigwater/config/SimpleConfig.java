@@ -23,7 +23,7 @@ package bigwater.config;
  * THE SOFTWARE.
  */
 
-import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -98,8 +98,8 @@ public class SimpleConfig {
      * @param filename - name of the config file
      * @return new config request object
      */
-    public static ConfigRequest of( String filename ) {
-        Path path = FabricLoader.getInstance().getConfigDir();
+    public static ConfigRequest of(String filename) {
+        Path path = FMLPaths.CONFIGDIR.get();
         return new ConfigRequest( path.resolve( filename + ".properties" ).toFile(), filename );
     }
 

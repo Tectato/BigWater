@@ -1,7 +1,6 @@
 package bigwater.config;
 
 import bigwater.BigWater;
-import javafx.scene.input.KeyCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Checkbox;

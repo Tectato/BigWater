@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(DefaultFluidRenderer.class)
+@Mixin(FluidRenderer.class)
 public class SodiumFluidRendererMixin implements FluidRendererAccess {
     @Unique
     BlockPos pos;

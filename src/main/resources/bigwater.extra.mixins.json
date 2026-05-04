@@ -9,7 +9,5 @@
     "requireAnnotations": true
   },
   "client": [
-    "SodiumFluidRendererMixin",
-    "SodiumFluidRendererRedirect"
   ]
 }
