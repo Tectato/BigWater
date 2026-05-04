@@ -1,8 +1,6 @@
 package bigwater;
 
-import bigwater.config.SimpleConfig;
 import com.google.gson.JsonObject;
-import com.mojang.serialization.*;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -19,8 +17,12 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Tuple;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,22 +39,18 @@ import static bigwater.BigWater.MOD_ID;
 public class BigWater {
 	public static final String MOD_ID = "bigwater";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	private static final SimpleConfig CONFIG = SimpleConfig.of(MOD_ID).provider( BigWater::provider ).request();
-
-	public static final String VAR_DEFAULTSCALE = "defaultTextureScale";
-	public static final String VAR_OVERRIDE = "override";
-	public static int defaultTextureScale = CONFIG.getOrDefault(VAR_DEFAULTSCALE, 1);
-	public static float defaultScalant = 1.0f/defaultTextureScale;
-	public static boolean override = CONFIG.getOrDefault(VAR_OVERRIDE, false);
 
 	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
-	private static List<String> failedLookups = new LinkedList<>();
+	private static final List<String> failedLookups = new LinkedList<>();
 
 	public static Map<String, TextureAtlasSprite> fluidTextures = HashMap.newHashMap(8);
 
-	public BigWater(IEventBus eventBus) {
+	public BigWater(IEventBus eventBus, ModContainer modContainer) {
 		eventBus.addListener(this::addPackFinders);
 		eventBus.addListener(this::addReloadListeners);
+
+		modContainer.registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
+		modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 	}
 
 	private void addReloadListeners(final AddClientReloadListenersEvent event) {
@@ -132,17 +130,18 @@ public class BigWater {
 	}
 
 	public static Tuple<Integer, Float> getTextureScale(String identifier){
-		if (override){
-			return new Tuple<>(defaultTextureScale, defaultScalant);
+		if (Config.FORCE_FALLBACK_SCALE.get()){
+			return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 		}
+
 		if (textureScales.containsKey(identifier)){
 			return textureScales.get(identifier);
 		}
 		if (!failedLookups.contains(identifier)){
 			failedLookups.add(identifier);
-			LOGGER.info("[BigWater] Scale lookup failed for " + identifier + ", using config default");
+			LOGGER.info("[BigWater] Scale lookup failed for {}, using config default", identifier);
 		}
-		return new Tuple<>(defaultTextureScale, defaultScalant);
+		return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 	}
 
 	public static TextureAtlasSprite getTexture(String identifier){
@@ -151,31 +150,9 @@ public class BigWater {
 		}
 		if (!failedLookups.contains(identifier)){
 			failedLookups.add(identifier);
-			LOGGER.info("[BigWater] Texture lookup failed for " + identifier + ", using default");
+			LOGGER.info("[BigWater] Texture lookup failed for {}, using default", identifier);
 		}
 		return null;
-	}
-
-	public static void setConfig(String key, String value){
-		CONFIG.set(key, value);
-
-		if (key.equals(VAR_DEFAULTSCALE)){
-			defaultTextureScale = CONFIG.getOrDefault(key, 1);
-			defaultScalant = 1.0f/defaultTextureScale;
-		} else if (key.equals(VAR_OVERRIDE)){
-			override = Boolean.parseBoolean(value);
-		}
-	}
-
-	public static void writeConfig(){
-		CONFIG.writeToFile();
-	}
-
-	private static String provider( String filename ) {
-		return "# Default scale for textures if resourcepacks don't provide any:\n"
-				+ VAR_DEFAULTSCALE + "=1"
-				+ "\n\n# Override pack-provided settings with default scale:\n"
-				+ VAR_OVERRIDE + "=false";
 	}
 
 	public static int getTexPos(int worldPos, int textureScale, boolean reverseCoords){
