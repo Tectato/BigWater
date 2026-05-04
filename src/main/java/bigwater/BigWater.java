@@ -97,7 +97,7 @@ public class BigWater {
 				PackType.CLIENT_RESOURCES,
 				Component.literal("Big Water"),
 				PackSource.BUILT_IN,
-				true,
+				false,
 				Pack.Position.TOP
 		);
 
