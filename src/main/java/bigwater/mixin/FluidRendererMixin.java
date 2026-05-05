@@ -27,47 +27,48 @@ import java.util.Iterator;
 @Mixin(FluidRenderer.class)
 public class FluidRendererMixin implements FluidRendererAccess {
     @Unique
-    BlockPos pos;
+    BlockPos bigwater$pos;
 
     @Unique
-    FluidState state;
+    FluidState bigwater$state;
 
     @Unique
-    Vec3 flow;
+    Vec3 bigwater$flow;
 
     @Unique
-    Direction direction;
+    Direction bigwater$direction;
 
     @Override
-    public void bigwater$setPos(BlockPos pos){this.pos = pos;}
+    public void bigwater$setPos(BlockPos pos){this.bigwater$pos = pos;}
 
     @Override
-    public BlockPos bigwater$getPos() {return pos;}
+    public BlockPos bigwater$getPos() {return bigwater$pos;}
 
     @Override
-    public void bigwater$setFluidState(FluidState state){this.state = state;}
+    public void bigwater$setFluidState(FluidState state){this.bigwater$state = state;}
 
     @Override
-    public FluidState bigwater$getFluidState(){return state;}
+    public FluidState bigwater$getFluidState(){return bigwater$state;}
 
     @Override
-    public void bigwater$setFlow(Vec3 flow){this.flow = flow;}
+    public void bigwater$setFlow(Vec3 flow){this.bigwater$flow = flow;}
 
     @Override
-    public Vec3 bigwater$getFlow(){return flow;}
+    public Vec3 bigwater$getFlow(){return bigwater$flow;}
 
     @Override
-    public void bigwater$setDirection(Direction dir){direction = dir;}
+    public void bigwater$setDirection(Direction dir){
+        bigwater$direction = dir;}
 
     @Override
-    public Direction bigwater$getDirection(){return direction;}
+    public Direction bigwater$getDirection(){return bigwater$direction;}
 
 
     @Inject(
             at = @At(
                     value = "HEAD"
             ),
-            method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
+            method = "tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
     )
     public void tesselateHeadInject(BlockAndTintGetter level, BlockPos pos, FluidRenderer.Output output, BlockState blockState, FluidState fluidState, CallbackInfo ci){
         bigwater$setPos(pos);
@@ -81,7 +82,7 @@ public class FluidRendererMixin implements FluidRendererAccess {
                     target = "Lnet/minecraft/client/renderer/block/FluidRenderer;isFaceOccludedByNeighbor(Lnet/minecraft/core/Direction;FLnet/minecraft/world/level/block/state/BlockState;)Z",
                     ordinal = 2
             ),
-            method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V",
+            method = "tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V",
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
     public void isFaceOccludedInject(BlockAndTintGetter level, BlockPos pos, FluidRenderer.Output output, BlockState blockState, FluidState fluidState, CallbackInfo ci,
@@ -119,7 +120,7 @@ public class FluidRendererMixin implements FluidRendererAccess {
                                         float offs,
                                         float bottomOffs,
                                         int sideLightCoords,
-                                        Iterator var40,
+                                        Iterator<?> var40,
                                         Direction faceDir
                                      ){
         bigwater$setDirection(faceDir);
@@ -130,7 +131,7 @@ public class FluidRendererMixin implements FluidRendererAccess {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/resources/model/sprite/Material$Baked;sprite()Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;"
             ),
-            method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
+            method = "tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
     )
     public TextureAtlasSprite spriteReturnInject(TextureAtlasSprite original){
         TextureAtlasSprite sprite = BigWater.getTexture(original.contents().name().toString());

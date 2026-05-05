@@ -16,6 +16,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -29,7 +30,7 @@ abstract class SodiumFluidRendererRedirect {
                     target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;writeQuad(Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/model/quad/ModelQuadView;Lnet/caffeinemc/mods/sodium/client/model/quad/properties/ModelQuadFacing;Z)V",
                     ordinal = 0
             ),
-            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
+            method = "render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
     )
     private void writeTopQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
         FluidState state = ((FluidRendererAccess)instance).bigwater$getFluidState();
@@ -58,7 +59,7 @@ abstract class SodiumFluidRendererRedirect {
             uPos = pos.getX();
             vPos = pos.getZ();
         }
-        writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(uPos, textureScale, true ^ mirrorU), getTexPos(vPos, textureScale, false ^ mirrorV), scaleData);
+        bigwater$writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(uPos, textureScale, true ^ mirrorU), getTexPos(vPos, textureScale, false ^ mirrorV), scaleData);
     }
 
     @Redirect(
@@ -75,7 +76,7 @@ abstract class SodiumFluidRendererRedirect {
         Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
         BlockPos pos = ((FluidRendererAccess)instance).bigwater$getPos();
-        writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(pos.getX(), textureScale, false), getTexPos(pos.getZ(), textureScale, true), scaleData);
+        bigwater$writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(pos.getX(), textureScale, false), getTexPos(pos.getZ(), textureScale, true), scaleData);
     }
 
     @Redirect(
@@ -117,16 +118,11 @@ abstract class SodiumFluidRendererRedirect {
                 BigWater.LOGGER.info("Invalid Direction: " + dir);
                 break;
         }
-        writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, uPos, vPos, scaleData);
+        bigwater$writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, uPos, vPos, scaleData);
     }
 
-
-
-
-
-
-
-    private void writeFlatQuad(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip, int uPos, int vPos, Tuple<Integer, Float> scaleData) {
+    @Unique
+    private void bigwater$writeFlatQuad(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip, int uPos, int vPos, Tuple<Integer, Float> scaleData) {
         /* TODO: handle flowing textures properly
          * - side faces need to change mapping to be across X/Y or Z/Y
          * - top faces need to rotate mapping depending on flow direction
