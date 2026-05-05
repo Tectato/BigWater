@@ -27,55 +27,56 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-@Mixin(FluidRenderer.class)
+@Mixin(DefaultFluidRenderer.class)
 public class SodiumFluidRendererMixin implements FluidRendererAccess {
     @Unique
-    BlockPos pos;
+    BlockPos bigwater$pos;
 
     @Unique
-    FluidState state;
+    FluidState bigwater$state;
 
     @Unique
-    Vec3 flow;
+    Vec3 bigwater$flow;
 
     @Unique
-    Direction direction;
+    Direction bigwater$direction;
 
     @Override
-    public void setPos(BlockPos pos){this.pos = pos;}
+    public void bigwater$setPos(BlockPos pos){this.bigwater$pos = pos;}
 
     @Override
-    public BlockPos getPos() {return pos;}
+    public BlockPos bigwater$getPos() {return bigwater$pos;}
 
     @Override
-    public void setFluidState(FluidState state){this.state = state;}
+    public void bigwater$setFluidState(FluidState state){this.bigwater$state = state;}
 
     @Override
-    public FluidState getFluidState(){return state;}
+    public FluidState bigwater$getFluidState(){return bigwater$state;}
 
     @Override
-    public void setFlow(Vec3 flow){this.flow = flow;}
+    public void bigwater$setFlow(Vec3 flow){this.bigwater$flow = flow;}
 
     @Override
-    public Vec3 getFlow(){return flow;}
+    public Vec3 bigwater$getFlow(){return bigwater$flow;}
 
     @Override
-    public void setDirection(Direction dir){direction = dir;}
+    public void bigwater$setDirection(Direction dir){
+        bigwater$direction = dir;}
 
     @Override
-    public Direction getDirection(){return direction;}
+    public Direction bigwater$getDirection(){return bigwater$direction;}
 
 
     @Inject(
             at = @At(
                     value = "HEAD"
             ),
-            method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
+            method = "render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
     )
     public void renderHeadInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, FluidModel sprites, CallbackInfo ci){
-        setPos(blockPos);
-        setFluidState(fluidState);
-        setFlow(fluidState.getFlow(level, blockPos));
+        bigwater$setPos(blockPos);
+        bigwater$setFluidState(fluidState);
+        bigwater$setFlow(fluidState.getFlow(level, blockPos));
     }
 
     @Inject(
@@ -114,7 +115,7 @@ public class SodiumFluidRendererMixin implements FluidRendererAccess {
         int var34,
         int var35,
         Direction dir){
-            setDirection(dir);
+            bigwater$setDirection(dir);
     }
 
     @ModifyExpressionValue(

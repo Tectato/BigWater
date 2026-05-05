@@ -6,15 +6,15 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 
 public interface FluidRendererAccess {
-    void setPos(BlockPos pos);
-    BlockPos getPos();
+    void bigwater$setPos(BlockPos pos);
+    BlockPos bigwater$getPos();
 
-    void setFluidState(FluidState state);
-    FluidState getFluidState();
+    void bigwater$setFluidState(FluidState state);
+    FluidState bigwater$getFluidState();
 
-    void setFlow(Vec3 flow);
-    Vec3 getFlow();
+    void bigwater$setFlow(Vec3 flow);
+    Vec3 bigwater$getFlow();
 
-    void setDirection(Direction dir);
-    Direction getDirection();
+    void bigwater$setDirection(Direction dir);
+    Direction bigwater$getDirection();
 }

@@ -2,7 +2,6 @@ package bigwater.mixin;
 
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.caffeinemc.mods.sodium.client.model.quad.ModelQuadView;
 import net.caffeinemc.mods.sodium.client.model.quad.ModelQuadViewMutable;
 import net.caffeinemc.mods.sodium.client.model.quad.properties.ModelQuadFacing;
@@ -10,9 +9,6 @@ import net.caffeinemc.mods.sodium.client.render.chunk.compile.buffers.ChunkModel
 import net.caffeinemc.mods.sodium.client.render.chunk.compile.pipeline.DefaultFluidRenderer;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.material.Material;
 import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.TranslucentGeometryCollector;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Tuple;
@@ -22,14 +18,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static bigwater.BigWater.getTexPos;
 
 @Mixin(DefaultFluidRenderer.class)
 abstract class SodiumFluidRendererRedirect {
-    @Environment(EnvType.CLIENT)
-
     @Redirect(
             at = @At(
                     value = "INVOKE",
@@ -39,14 +32,14 @@ abstract class SodiumFluidRendererRedirect {
             method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
     )
     private void writeTopQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
-        FluidState state = ((FluidRendererAccess)instance).getFluidState();
+        FluidState state = ((FluidRendererAccess)instance).bigwater$getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
         Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
-        BlockPos pos = ((FluidRendererAccess)instance).getPos();
+        BlockPos pos = ((FluidRendererAccess)instance).bigwater$getPos();
         boolean mirrorU = false;
         boolean mirrorV = false;
-        Vec3 flow = ((FluidRendererAccess)instance).getFlow();
+        Vec3 flow = ((FluidRendererAccess)instance).bigwater$getFlow();
         int uPos;
         int vPos;
         if (flow.x != 0.0d || flow.z != 0.0d) { // Flowing
@@ -77,11 +70,11 @@ abstract class SodiumFluidRendererRedirect {
             method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V"
     )
     private void writeBottomQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
-        FluidState state = ((FluidRendererAccess)instance).getFluidState();
+        FluidState state = ((FluidRendererAccess)instance).bigwater$getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
         Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
-        BlockPos pos = ((FluidRendererAccess)instance).getPos();
+        BlockPos pos = ((FluidRendererAccess)instance).bigwater$getPos();
         writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(pos.getX(), textureScale, false), getTexPos(pos.getZ(), textureScale, true), scaleData);
     }
 
@@ -95,12 +88,12 @@ abstract class SodiumFluidRendererRedirect {
     )
     private void writeSideQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
         FluidRendererAccess accessor = ((FluidRendererAccess)instance);
-        Direction dir = accessor.getDirection();
-        FluidState state = accessor.getFluidState();
+        Direction dir = accessor.bigwater$getDirection();
+        FluidState state = accessor.bigwater$getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
         Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
-        BlockPos pos = accessor.getPos();
+        BlockPos pos = accessor.bigwater$getPos();
         int uPos = 0;
         int vPos = 0;
         switch (dir){

@@ -39,28 +39,28 @@ public class FluidRendererMixin implements FluidRendererAccess {
     Direction direction;
 
     @Override
-    public void setPos(BlockPos pos){this.pos = pos;}
+    public void bigwater$setPos(BlockPos pos){this.pos = pos;}
 
     @Override
-    public BlockPos getPos() {return pos;}
+    public BlockPos bigwater$getPos() {return pos;}
 
     @Override
-    public void setFluidState(FluidState state){this.state = state;}
+    public void bigwater$setFluidState(FluidState state){this.state = state;}
 
     @Override
-    public FluidState getFluidState(){return state;}
+    public FluidState bigwater$getFluidState(){return state;}
 
     @Override
-    public void setFlow(Vec3 flow){this.flow = flow;}
+    public void bigwater$setFlow(Vec3 flow){this.flow = flow;}
 
     @Override
-    public Vec3 getFlow(){return flow;}
+    public Vec3 bigwater$getFlow(){return flow;}
 
     @Override
-    public void setDirection(Direction dir){direction = dir;}
+    public void bigwater$setDirection(Direction dir){direction = dir;}
 
     @Override
-    public Direction getDirection(){return direction;}
+    public Direction bigwater$getDirection(){return direction;}
 
 
     @Inject(
@@ -70,9 +70,9 @@ public class FluidRendererMixin implements FluidRendererAccess {
             method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
     )
     public void tesselateHeadInject(BlockAndTintGetter level, BlockPos pos, FluidRenderer.Output output, BlockState blockState, FluidState fluidState, CallbackInfo ci){
-        setPos(pos);
-        setFluidState(fluidState);
-        setFlow(fluidState.getFlow(level, pos));
+        bigwater$setPos(pos);
+        bigwater$setFluidState(fluidState);
+        bigwater$setFlow(fluidState.getFlow(level, pos));
     }
 
     @Inject(
@@ -122,7 +122,7 @@ public class FluidRendererMixin implements FluidRendererAccess {
                                         Iterator var40,
                                         Direction faceDir
                                      ){
-        setDirection(faceDir);
+        bigwater$setDirection(faceDir);
     }
 
     @ModifyExpressionValue(

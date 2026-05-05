@@ -15,6 +15,9 @@ Larger-scale fluid textures
 [[mixins]]
 config="bigwater.mixins.json"
 
+[[mixins]]
+config="bigwater.extra.mixins.json"
+
 [[dependencies."${mod_id}"]]
 modId="neoforge"
 type="required"
