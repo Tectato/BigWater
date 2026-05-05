@@ -1,22 +1,29 @@
 package bigwater;
 
-import bigwater.config.SimpleConfig;
 import com.google.gson.JsonObject;
-import com.mojang.serialization.*;
-import net.fabricmc.api.ClientModInitializer;
 
-import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
-import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Tuple;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,74 +31,92 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class BigWater implements ClientModInitializer {
+import static bigwater.BigWater.MOD_ID;
+
+@Mod(value = MOD_ID, dist = Dist.CLIENT)
+public class BigWater {
 	public static final String MOD_ID = "bigwater";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	private static final SimpleConfig CONFIG = SimpleConfig.of(MOD_ID).provider( BigWater::provider ).request();
-
-	public static final String VAR_DEFAULTSCALE = "defaultTextureScale";
-	public static final String VAR_OVERRIDE = "override";
-	public static int defaultTextureScale = CONFIG.getOrDefault(VAR_DEFAULTSCALE, 1);
-	public static float defaultScalant = 1.0f/defaultTextureScale;
-	public static boolean override = CONFIG.getOrDefault(VAR_OVERRIDE, false);
 
 	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
-	private static List<String> failedLookups = new LinkedList<>();
+	private static final List<String> failedLookups = new LinkedList<>();
 
 	public static Map<String, TextureAtlasSprite> fluidTextures = HashMap.newHashMap(8);
 
-	@Override
-	public void onInitializeClient() {
-		Identifier rekindled = Identifier.fromNamespaceAndPath(MOD_ID,"rekindled");
-		Identifier stylized = Identifier.fromNamespaceAndPath(MOD_ID,"stylized");
-		Identifier vanilla = Identifier.fromNamespaceAndPath(MOD_ID,"vanilla");
-		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
-			ResourceLoader.registerBuiltinPack(rekindled, container, PackActivationType.NORMAL);
-			ResourceLoader.registerBuiltinPack(stylized, container, PackActivationType.NORMAL);
-			ResourceLoader.registerBuiltinPack(vanilla, container, PackActivationType.DEFAULT_ENABLED);
-		});
+	public BigWater(IEventBus eventBus, ModContainer modContainer) {
+		eventBus.addListener(this::addPackFinders);
+		eventBus.addListener(this::addReloadListeners);
 
-		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+		modContainer.registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
+		modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+	}
+
+	private void addReloadListeners(final AddClientReloadListenersEvent event) {
+		event.addListener(
 				Identifier.fromNamespaceAndPath(MOD_ID,"config"),
-				(ResourceManagerReloadListener) manager -> {
-					textureScales.clear();
-					Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith("bigwater.json"));
+				(ResourceManagerReloadListener)this::onReload
+		);
+	}
 
-					for(Map.Entry<Identifier, Resource> entry : resourceMap.entrySet()){
-						try(InputStream stream = manager.getResource(entry.getKey()).get().open()) {
-							BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-							JsonObject json = GsonHelper.parse(streamReader);
+	private void onReload(ResourceManager manager) {
+		textureScales.clear();
+		Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith("bigwater.json"));
 
-							JsonObject settings = json.get("textureScale").getAsJsonObject();
-							for (String key : settings.keySet()){
-								int value = settings.get(key).getAsInt();
-								textureScales.put(key, new Tuple<>(value, 1.0f/value));
-								String[] split = key.split(":");
-								if (split.length > 1) {
-									textureScales.put(split[0] + ":flowing_" + split[1], new Tuple<>(value, 1.0f / value));
-								}
-							}
-							LOGGER.info("[BigWater] Read resource pack provided settings");
+		for(Map.Entry<Identifier, Resource> entry : resourceMap.entrySet()){
+			try(InputStream stream = manager.getResource(entry.getKey()).get().open()) {
+				BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+				JsonObject json = GsonHelper.parse(streamReader);
 
-						} catch(Exception e) {
-							LOGGER.error("[BigWater] Failed to read resource pack settings");
-							LOGGER.error(String.valueOf(e));
-						}
+				JsonObject settings = json.get("textureScale").getAsJsonObject();
+				for (String key : settings.keySet()){
+					int value = settings.get(key).getAsInt();
+					textureScales.put(key, new Tuple<>(value, 1.0f/value));
+					String[] split = key.split(":");
+					if (split.length > 1) {
+						textureScales.put(split[0] + ":flowing_" + split[1], new Tuple<>(value, 1.0f / value));
 					}
-
-					fluidTextures.clear();
-					checkCustomTextures("water"); // TODO: make this run for any registered fluids
-					checkCustomTextures("lava");
-
-					/*for(String key : fluidTextures.keySet()){
-						LOGGER.info("[BW] " + key + " -> " + fluidTextures.get(key));
-					}*/
 				}
+			} catch(Exception e) {
+				LOGGER.error("[BigWater] Failed to read resource pack settings");
+				LOGGER.error(String.valueOf(e));
+			}
+		}
+
+		fluidTextures.clear();
+		checkCustomTextures("water");
+		checkCustomTextures("lava");
+	}
+
+	private void addPackFinders(final AddPackFindersEvent event) {
+		if(event.getPackType() != PackType.CLIENT_RESOURCES) return;
+
+		event.addPackFinders(
+				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/vanilla"),
+				PackType.CLIENT_RESOURCES,
+				Component.literal("Big Water"),
+				PackSource.BUILT_IN,
+				false,
+				Pack.Position.TOP
+		);
+
+		event.addPackFinders(
+				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/rekindled"),
+				PackType.CLIENT_RESOURCES,
+				Component.literal("Big Water Rekindled"),
+				PackSource.BUILT_IN,
+				false,
+				Pack.Position.TOP
+		);
+
+		event.addPackFinders(
+				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/stylized"),
+				PackType.CLIENT_RESOURCES,
+				Component.literal("Big Water Stylized"),
+				PackSource.BUILT_IN,
+				false,
+				Pack.Position.TOP
 		);
 	}
 
@@ -105,17 +130,18 @@ public class BigWater implements ClientModInitializer {
 	}
 
 	public static Tuple<Integer, Float> getTextureScale(String identifier){
-		if (override){
-			return new Tuple<>(defaultTextureScale, defaultScalant);
+		if (Config.FORCE_FALLBACK_SCALE.get()){
+			return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 		}
+
 		if (textureScales.containsKey(identifier)){
 			return textureScales.get(identifier);
 		}
 		if (!failedLookups.contains(identifier)){
 			failedLookups.add(identifier);
-			LOGGER.info("[BigWater] Scale lookup failed for " + identifier + ", using config default");
+			LOGGER.info("[BigWater] Scale lookup failed for {}, using config default", identifier);
 		}
-		return new Tuple<>(defaultTextureScale, defaultScalant);
+		return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 	}
 
 	public static TextureAtlasSprite getTexture(String identifier){
@@ -124,31 +150,9 @@ public class BigWater implements ClientModInitializer {
 		}
 		if (!failedLookups.contains(identifier)){
 			failedLookups.add(identifier);
-			LOGGER.info("[BigWater] Texture lookup failed for " + identifier + ", using default");
+			LOGGER.info("[BigWater] Texture lookup failed for {}, using default", identifier);
 		}
 		return null;
-	}
-
-	public static void setConfig(String key, String value){
-		CONFIG.set(key, value);
-
-		if (key.equals(VAR_DEFAULTSCALE)){
-			defaultTextureScale = CONFIG.getOrDefault(key, 1);
-			defaultScalant = 1.0f/defaultTextureScale;
-		} else if (key.equals(VAR_OVERRIDE)){
-			override = Boolean.parseBoolean(value);
-		}
-	}
-
-	public static void writeConfig(){
-		CONFIG.writeToFile();
-	}
-
-	private static String provider( String filename ) {
-		return "# Default scale for textures if resourcepacks don't provide any:\n"
-				+ VAR_DEFAULTSCALE + "=1"
-				+ "\n\n# Override pack-provided settings with default scale:\n"
-				+ VAR_OVERRIDE + "=false";
 	}
 
 	public static int getTexPos(int worldPos, int textureScale, boolean reverseCoords){

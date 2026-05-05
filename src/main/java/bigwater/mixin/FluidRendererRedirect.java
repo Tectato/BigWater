@@ -3,8 +3,6 @@ package bigwater.mixin;
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,8 +18,6 @@ import static bigwater.BigWater.getTexPos;
 
 @Mixin(FluidRenderer.class)
 abstract class FluidRendererRedirect {
-	@Environment(EnvType.CLIENT)
-
 	@Redirect(
 			at = @At(
 					value = "INVOKE",
@@ -31,14 +27,14 @@ abstract class FluidRendererRedirect {
 			method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
 	)
 	private void addTopFaceRedirect(FluidRenderer instance, VertexConsumer builder, float x0, float y0, float z0, float u0, float v0, float x1, float y1, float z1, float u1, float v1, float x2, float y2, float z2, float u2, float v2, float x3, float y3, float z3, float u3, float v3, int color, int lightCoords, boolean addBackFace) {
-		FluidState state = ((FluidRendererAccess)instance).getFluidState();
+		FluidState state = ((FluidRendererAccess)instance).bigwater$getFluidState();
 		String id = state.getType().builtInRegistryHolder().getRegisteredName();
 		Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
 		int textureScale = scaleData.getA();
-		BlockPos pos = ((FluidRendererAccess)instance).getPos();
+		BlockPos pos = ((FluidRendererAccess)instance).bigwater$getPos();
 		boolean mirrorU = false;
 		boolean mirrorV = false;
-		Vec3 flow = ((FluidRendererAccess)instance).getFlow();
+		Vec3 flow = ((FluidRendererAccess)instance).bigwater$getFlow();
 		int uPos;
 		int vPos;
 		if (flow.x != 0.0d || flow.z != 0.0d) { // Flowing
@@ -69,11 +65,11 @@ abstract class FluidRendererRedirect {
 			method = "Lnet/minecraft/client/renderer/block/FluidRenderer;tesselate(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/client/renderer/block/FluidRenderer$Output;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;)V"
 	)
 	private void addBottomFaceRedirect(FluidRenderer instance, VertexConsumer builder, float x0, float y0, float z0, float u0, float v0, float x1, float y1, float z1, float u1, float v1, float x2, float y2, float z2, float u2, float v2, float x3, float y3, float z3, float u3, float v3, int color, int lightCoords, boolean addBackFace) {
-		FluidState state = ((FluidRendererAccess)instance).getFluidState();
+		FluidState state = ((FluidRendererAccess)instance).bigwater$getFluidState();
 		String id = state.getType().builtInRegistryHolder().getRegisteredName();
 		Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
 		int textureScale = scaleData.getA();
-		BlockPos pos = ((FluidRendererAccess)instance).getPos();
+		BlockPos pos = ((FluidRendererAccess)instance).bigwater$getPos();
 		addFaceMod(instance, builder, x0, y0, z0, u0, v0, x1, y1, z1, u1, v1, x2, y2, z2, u2, v2, x3, y3, z3, u3, v3, color, lightCoords, addBackFace, getTexPos(pos.getX(), textureScale, false), getTexPos(pos.getZ(), textureScale, true), scaleData);
 	}
 
@@ -88,12 +84,12 @@ abstract class FluidRendererRedirect {
 	)
 	private void writeSideQuadRedirect(FluidRenderer instance, VertexConsumer builder, float x0, float y0, float z0, float u0, float v0, float x1, float y1, float z1, float u1, float v1, float x2, float y2, float z2, float u2, float v2, float x3, float y3, float z3, float u3, float v3, int color, int lightCoords, boolean addBackFace) {
 		FluidRendererAccess accessor = ((FluidRendererAccess)instance);
-		Direction dir = accessor.getDirection();
-		FluidState state = accessor.getFluidState();
+		Direction dir = accessor.bigwater$getDirection();
+		FluidState state = accessor.bigwater$getFluidState();
 		String id = state.getType().builtInRegistryHolder().getRegisteredName();
 		Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
 		int textureScale = scaleData.getA();
-		BlockPos pos = accessor.getPos();
+		BlockPos pos = accessor.bigwater$getPos();
 		int uPos = 0;
 		int vPos = 0;
 		switch (dir){

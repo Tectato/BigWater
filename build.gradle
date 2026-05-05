@@ -1,60 +1,119 @@
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'java-library'
 	id 'maven-publish'
+	id 'net.neoforged.moddev' version '2.0.141'
+	id 'idea'
 }
 
 version = project.mod_version
 group = project.maven_group
 
+sourceSets.main.resources {
+	srcDir('src/generated/resources')
+
+	// Exclude common development only resources from finalized outputs
+	exclude("src/generated/**/.cache") // datagen cache files
+}
+
 repositories {
 	maven {
-		name = "Terraformers"
-		url = "https://maven.terraformersmc.com/"
-	}
-	maven {
 		name "CaffeineMC"
-		url "https://maven.caffeinemc.net/releases" // or /snapshots
+		url "https://maven.caffeinemc.net/releases"
 	}
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	
-	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	implementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-	implementation "net.caffeinemc:sodium-fabric:${project.sodium_version}"
+	implementation "net.caffeinemc:sodium-neoforge:$project.sodium_version"
+	implementation "net.caffeinemc:sodium-neoforge-api:$project.sodium_version"
+	implementation "net.caffeinemc:sodium-neoforge-mod:$project.sodium_version"
 }
 
-processResources {
-	inputs.property "version", project.version
+base {
+	archivesName = mod_id
+}
 
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+	version = project.neo_version
+
+	runs {
+		client {
+			client()
+
+			systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+		}
+
+		server {
+			server()
+			programArgument '--nogui'
+			systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+		}
+
+		gameTestServer {
+			type = "gameTestServer"
+			systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+		}
+
+		data {
+			clientData()
+
+			programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+		}
+
+		// applies to all the run configs above
+		configureEach {
+			systemProperty 'forge.logging.markers', 'REGISTRIES'
+
+			logLevel = org.slf4j.event.Level.DEBUG
+		}
 	}
+
+	mods {
+		"${mod_id}" {
+			sourceSet(sourceSets.main)
+		}
+	}
+}
+
+configurations {
+	runtimeClasspath.extendsFrom localRuntime
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+	var replaceProperties = [
+			minecraft_version      : minecraft_version,
+			minecraft_version_range: minecraft_version_range,
+			neo_version            : neo_version,
+			mod_id                 : mod_id,
+			mod_name               : mod_name,
+			mod_license            : mod_license,
+			mod_version            : mod_version,
+	]
+	inputs.properties replaceProperties
+	expand replaceProperties
+	from "src/main/templates"
+	into "build/generated/sources/modMetadata"
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.named('wrapper', Wrapper).configure {
+	distributionType = Wrapper.DistributionType.BIN
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
+	options.encoding = 'UTF-8'
 }
 
-java {
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
-}
-
-jar {
-	inputs.property "projectName", project.name
-
-	from("LICENSE") {
-		rename { "${it}_${project.name}"}
+idea {
+	module {
+		downloadSources = true
+		downloadJavadoc = true
 	}
 }
 
-// configure the maven publication
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
