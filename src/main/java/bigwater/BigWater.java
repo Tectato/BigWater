@@ -75,7 +75,7 @@ public class BigWater implements ClientModInitializer {
 								Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f/scale);
 								textureScales.put("minecraft:" + id, values);
 								textureScales.put("minecraft:flowing_" + id, values);
-							} catch (Exception _){}
+							} catch (Exception ignored){}
 
 						} catch(Exception e) {
 							LOGGER.error("[BigWater] Couldn't read config from file " + entry.getKey());
