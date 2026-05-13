@@ -60,29 +60,29 @@ public class BigWater implements ClientModInitializer {
 				Identifier.fromNamespaceAndPath(MOD_ID,"config"),
 				(ResourceManagerReloadListener) manager -> {
 					textureScales.clear();
-					Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith("bigwater.json"));
+					failedLookups.clear();
+					Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith(".json"));
 
 					for(Map.Entry<Identifier, Resource> entry : resourceMap.entrySet()){
 						try(InputStream stream = manager.getResource(entry.getKey()).get().open()) {
 							BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 							JsonObject json = GsonHelper.parse(streamReader);
 
-							JsonObject settings = json.get("textureScale").getAsJsonObject();
-							for (String key : settings.keySet()){
-								int value = settings.get(key).getAsInt();
-								textureScales.put(key, new Tuple<>(value, 1.0f/value));
-								String[] split = key.split(":");
-								if (split.length > 1) {
-									textureScales.put(split[0] + ":flowing_" + split[1], new Tuple<>(value, 1.0f / value));
-								}
-							}
-							LOGGER.info("[BigWater] Read resource pack provided settings");
+							try {
+								int scale = json.get("textureScale").getAsInt();
+								String id = String.valueOf(entry.getKey());
+								id = id.substring("bigwater:config/".length(),id.length() - 5);
+								Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f/scale);
+								textureScales.put("minecraft:" + id, values);
+								textureScales.put("minecraft:flowing_" + id, values);
+							} catch (Exception _){}
 
 						} catch(Exception e) {
-							LOGGER.error("[BigWater] Failed to read resource pack settings");
+							LOGGER.error("[BigWater] Couldn't read config from file " + entry.getKey());
 							LOGGER.error(String.valueOf(e));
 						}
 					}
+					LOGGER.info("[BigWater] Read resource pack provided settings");
 
 					fluidTextures.clear();
 					checkCustomTextures("water"); // TODO: make this run for any registered fluids
