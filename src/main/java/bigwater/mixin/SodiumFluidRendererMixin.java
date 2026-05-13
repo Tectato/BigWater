@@ -3,6 +3,7 @@ package bigwater.mixin;
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.caffeinemc.mods.sodium.client.model.color.ColorProvider;
 import net.caffeinemc.mods.sodium.client.model.light.LightMode;
 import net.caffeinemc.mods.sodium.client.model.light.LightPipeline;
@@ -87,33 +88,7 @@ public class SodiumFluidRendererMixin implements FluidRendererAccess {
             method = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;Lnet/minecraft/client/renderer/block/FluidModel;)V",
             locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    public void renderDirInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, FluidModel sprites, CallbackInfo ci,
-                                Fluid fluid,
-                                boolean  upVisible,
-        boolean downVisible,
-        boolean northSelfVisible,
-        boolean southSelfVisible,
-        boolean westSelfVisible,
-        boolean eastSelfVisible,
-        boolean northVisible,
-        boolean southVisible,
-        boolean westVisible,
-        boolean eastVisible,
-        boolean isWater,
-        float fluidHeight,
-        float northWestHeight,
-        float southWestHeight,
-        float southEastHeight,
-        float northEastHeight,
-        float yOffset,
-        ModelQuadViewMutable quad,
-        LightMode lightMode,
-        LightPipeline lighter,
-        boolean inwardsUpFaceVisible,
-        Direction[] var33,
-        int var34,
-        int var35,
-        Direction dir){
+    public void renderDirInject(LevelSlice level, BlockState blockState, FluidState fluidState, BlockPos blockPos, BlockPos offset, TranslucentGeometryCollector collector, ChunkModelBuilder meshBuilder, Material material, ColorProvider<FluidState> colorProvider, FluidModel sprites, CallbackInfo ci, @Local Direction dir){
             setDirection(dir);
     }
 
