@@ -5,16 +5,16 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.*;
 import net.fabricmc.api.ClientModInitializer;
 
-import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
-import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class BigWater implements ClientModInitializer {
 	public static final String MOD_ID = "bigwater";
@@ -47,60 +48,70 @@ public class BigWater implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		Identifier rekindled = Identifier.fromNamespaceAndPath(MOD_ID,"rekindled");
-		Identifier stylized = Identifier.fromNamespaceAndPath(MOD_ID,"stylized");
-		Identifier vanilla = Identifier.fromNamespaceAndPath(MOD_ID,"vanilla");
+		ResourceLocation rekindled = ResourceLocation.fromNamespaceAndPath(MOD_ID,"rekindled");
+		ResourceLocation stylized = ResourceLocation.fromNamespaceAndPath(MOD_ID,"stylized");
+		ResourceLocation vanilla = ResourceLocation.fromNamespaceAndPath(MOD_ID,"vanilla");
 		FabricLoader.getInstance().getModContainer(MOD_ID).ifPresent(container -> {
-			ResourceLoader.registerBuiltinPack(rekindled, container, PackActivationType.NORMAL);
-			ResourceLoader.registerBuiltinPack(stylized, container, PackActivationType.NORMAL);
-			ResourceLoader.registerBuiltinPack(vanilla, container, PackActivationType.DEFAULT_ENABLED);
+			ResourceManagerHelper.registerBuiltinResourcePack(rekindled, container, ResourcePackActivationType.NORMAL);
+			ResourceManagerHelper.registerBuiltinResourcePack(stylized, container, ResourcePackActivationType.NORMAL);
+			ResourceManagerHelper.registerBuiltinResourcePack(vanilla, container, ResourcePackActivationType.DEFAULT_ENABLED);
 		});
 
-		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(
-				Identifier.fromNamespaceAndPath(MOD_ID,"config"),
-				(ResourceManagerReloadListener) manager -> {
-					textureScales.clear();
-					failedLookups.clear();
-					Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith(".json"));
-
-					for(Map.Entry<Identifier, Resource> entry : resourceMap.entrySet()){
-						try(InputStream stream = manager.getResource(entry.getKey()).get().open()) {
-							BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-							JsonObject json = GsonHelper.parse(streamReader);
-
-							try {
-								int scale = json.get("textureScale").getAsInt();
-								String id = String.valueOf(entry.getKey());
-								id = id.substring("bigwater:config/".length(),id.length() - 5);
-								Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f/scale);
-								textureScales.put("minecraft:" + id, values);
-								textureScales.put("minecraft:flowing_" + id, values);
-							} catch (Exception _){}
-
-						} catch(Exception e) {
-							LOGGER.error("[BigWater] Couldn't read config from file " + entry.getKey());
-							LOGGER.error(String.valueOf(e));
-						}
+		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
+				new SimpleSynchronousResourceReloadListener() {
+					@Override
+					public ResourceLocation getFabricId() {
+						return ResourceLocation.fromNamespaceAndPath(MOD_ID, "config");
 					}
-					LOGGER.info("[BigWater] Read resource pack provided settings");
 
-					fluidTextures.clear();
-					checkCustomTextures("water"); // TODO: make this run for any registered fluids
-					checkCustomTextures("lava");
+					@Override
+					public void onResourceManagerReload(ResourceManager manager) {
+						textureScales.clear();
+						failedLookups.clear();
+						Map<ResourceLocation, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith(".json"));
+
+						for (Map.Entry<ResourceLocation, Resource> entry : resourceMap.entrySet()) {
+							try (InputStream stream = manager.getResource(entry.getKey()).get().open()) {
+								BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+								JsonObject json = GsonHelper.parse(streamReader);
+
+								try {
+									int scale = json.get("textureScale").getAsInt();
+									String id = String.valueOf(entry.getKey());
+									id = id.substring("bigwater:config/".length(), id.length() - 5);
+									Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f / scale);
+									textureScales.put("minecraft:" + id, values);
+									textureScales.put("minecraft:flowing_" + id, values);
+								} catch (Exception ignored) {
+								}
+
+							} catch (Exception e) {
+								LOGGER.error("[BigWater] Couldn't read config from file " + entry.getKey());
+								LOGGER.error(String.valueOf(e));
+							}
+						}
+						LOGGER.info("[BigWater] Read resource pack provided settings");
+
+						fluidTextures.clear();
+						checkCustomTextures("water"); // TODO: make this run for any registered fluids
+						checkCustomTextures("lava");
 
 					/*for(String key : fluidTextures.keySet()){
 						LOGGER.info("[BW] " + key + " -> " + fluidTextures.get(key));
 					}*/
+
+					}
 				}
 		);
 	}
 
 	private static void checkCustomTextures(String blockID){
-		TextureAtlasSprite stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_still"));
-		if (stillSprite.contents().name().toString().equals("minecraft:missingno")) stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_still"));
+		Function<ResourceLocation, TextureAtlasSprite> blockAtlas = Minecraft.getInstance().getTextureAtlas(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/atlas/blocks.png"));
+		TextureAtlasSprite stillSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_still"));
+		if (stillSprite.contents().name().toString().equals("minecraft:missingno")) stillSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath("minecraft","block/" + blockID + "_still"));
 		fluidTextures.put("minecraft:block/"+blockID+"_still", stillSprite);
-		TextureAtlasSprite flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_flow"));
-		if (flowSprite.contents().name().toString().equals("minecraft:missingno")) flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_flow"));
+		TextureAtlasSprite flowSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_flow"));
+		if (flowSprite.contents().name().toString().equals("minecraft:missingno")) flowSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath("minecraft","block/" + blockID + "_flow"));
 		fluidTextures.put("minecraft:block/"+blockID+"_flow", flowSprite);
 	}
 

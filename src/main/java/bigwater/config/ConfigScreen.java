@@ -2,14 +2,11 @@ package bigwater.config;
 
 import bigwater.BigWater;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
@@ -24,15 +21,10 @@ public class ConfigScreen extends Screen {
         setup();
     }
 
-    protected ConfigScreen(Minecraft minecraft, Font font, Component title) {
-        super(minecraft, font, title);
-        setup();
-    }
-
     public ConfigScreen(Screen parent, Minecraft client, int width, int height) {
         super(Component.nullToEmpty("Big Water Config"));
         this.parent = parent;
-        init(width, height);
+        init(client, width, height);
         setup();
     }
 
@@ -85,20 +77,20 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent click, boolean isDoubled){
-        if(backButton.mouseClicked(click, isDoubled)) return true;
-        if(scaleInput.mouseClicked(click, isDoubled)){
+    public boolean mouseClicked(double mouseX, double mouseY, int button){
+        if(backButton.mouseClicked(mouseX, mouseY, button)) return true;
+        if(scaleInput.mouseClicked(mouseX, mouseY, button)){
             setFocused(scaleInput);
         }
-        if(overrideInput.mouseClicked(click, isDoubled)){
+        if(overrideInput.mouseClicked(mouseX, mouseY, button)){
             setFocused(overrideInput);
         }
-        return super.mouseClicked(click, isDoubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean charTyped(CharacterEvent input) {
-        if(scaleInput.charTyped(input)) return true;
-        return super.charTyped(input);
+    public boolean charTyped(char c, int modifiers) {
+        if(scaleInput.charTyped(c, modifiers)) return true;
+        return super.charTyped(c, modifiers);
     }
 }
