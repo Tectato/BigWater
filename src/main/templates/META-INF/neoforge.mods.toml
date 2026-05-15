@@ -12,8 +12,8 @@ description='''
 Larger-scale fluid textures
 '''
 
-[[mixins]]
-config="bigwater.mixins.json"
+#[[mixins]]
+#config="bigwater.mixins.json"
 
 [[mixins]]
 config="bigwater.extra.mixins.json"

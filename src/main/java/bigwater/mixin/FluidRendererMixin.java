@@ -1,5 +1,5 @@
 package bigwater.mixin;
-
+/* Still cannot be bothered to rewrite this ._.
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -139,3 +139,4 @@ public class FluidRendererMixin implements FluidRendererAccess {
         return sprite;
     }
 }
+*/
