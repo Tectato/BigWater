@@ -83,13 +83,17 @@ abstract class SodiumFluidRendererRedirect {
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/pipeline/DefaultFluidRenderer;writeQuad(Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/model/quad/ModelQuadView;Lnet/caffeinemc/mods/sodium/client/model/quad/properties/ModelQuadFacing;Z)V",
-                    ordinal = 4
+                    ordinal = 3
             ),
             method = "render(Lnet/caffeinemc/mods/sodium/client/world/LevelSlice;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;Lnet/caffeinemc/mods/sodium/client/render/chunk/translucent_sorting/TranslucentGeometryCollector;Lnet/caffeinemc/mods/sodium/client/render/chunk/compile/buffers/ChunkModelBuilder;Lnet/caffeinemc/mods/sodium/client/render/chunk/terrain/material/Material;Lnet/caffeinemc/mods/sodium/client/model/color/ColorProvider;[Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V"
     )
     private void writeSideQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
         FluidRendererAccess accessor = ((FluidRendererAccess)instance);
         Direction dir = accessor.bigwater$getDirection();
+        if (dir == null){ // Direction setting inject didnt work, abandon ship
+            writeQuad(builder, collector, material, offset, quad, facing, flip);
+            return;
+        }
         FluidState state = accessor.bigwater$getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
         Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);

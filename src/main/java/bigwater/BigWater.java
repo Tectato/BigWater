@@ -4,9 +4,8 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
@@ -20,7 +19,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
@@ -32,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 
 import static bigwater.BigWater.MOD_ID;
 
@@ -53,9 +53,8 @@ public class BigWater {
 		modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
 	}
 
-	private void addReloadListeners(final AddClientReloadListenersEvent event) {
-		event.addListener(
-				Identifier.fromNamespaceAndPath(MOD_ID,"config"),
+	private void addReloadListeners(final RegisterClientReloadListenersEvent event) {
+		event.registerReloadListener(
 				(ResourceManagerReloadListener)this::onReload
 		);
 	}
@@ -63,9 +62,9 @@ public class BigWater {
 	private void onReload(ResourceManager manager) {
 		textureScales.clear();
 		failedLookups.clear();
-		Map<Identifier, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith(".json"));
+		Map<ResourceLocation, Resource> resourceMap = manager.listResources("config", path -> path.toString().endsWith(".json"));
 
-		for(Map.Entry<Identifier, Resource> entry : resourceMap.entrySet()){
+		for(Map.Entry<ResourceLocation, Resource> entry : resourceMap.entrySet()){
 			try(InputStream stream = manager.getResource(entry.getKey()).get().open()) {
 				BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 				JsonObject json = GsonHelper.parse(streamReader);
@@ -98,7 +97,7 @@ public class BigWater {
 		if(event.getPackType() != PackType.CLIENT_RESOURCES) return;
 
 		event.addPackFinders(
-				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/vanilla"),
+				ResourceLocation.fromNamespaceAndPath(MOD_ID, "resourcepacks/vanilla"),
 				PackType.CLIENT_RESOURCES,
 				Component.literal("Big Water"),
 				PackSource.BUILT_IN,
@@ -107,7 +106,7 @@ public class BigWater {
 		);
 
 		event.addPackFinders(
-				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/rekindled"),
+				ResourceLocation.fromNamespaceAndPath(MOD_ID, "resourcepacks/rekindled"),
 				PackType.CLIENT_RESOURCES,
 				Component.literal("Big Water Rekindled"),
 				PackSource.BUILT_IN,
@@ -116,7 +115,7 @@ public class BigWater {
 		);
 
 		event.addPackFinders(
-				Identifier.fromNamespaceAndPath(MOD_ID, "resourcepacks/stylized"),
+				ResourceLocation.fromNamespaceAndPath(MOD_ID, "resourcepacks/stylized"),
 				PackType.CLIENT_RESOURCES,
 				Component.literal("Big Water Stylized"),
 				PackSource.BUILT_IN,
@@ -126,11 +125,12 @@ public class BigWater {
 	}
 
 	private static void checkCustomTextures(String blockID){
-		TextureAtlasSprite stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_still"));
-		if (stillSprite.contents().name().toString().equals("minecraft:missingno")) stillSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_still"));
+		Function<ResourceLocation, TextureAtlasSprite> blockAtlas = Minecraft.getInstance().getTextureAtlas(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/atlas/blocks.png"));
+		TextureAtlasSprite stillSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_still"));
+		if (stillSprite.contents().name().toString().equals("minecraft:missingno")) stillSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath("minecraft","block/" + blockID + "_still"));
 		fluidTextures.put("minecraft:block/"+blockID+"_still", stillSprite);
-		TextureAtlasSprite flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_flow"));
-		if (flowSprite.contents().name().toString().equals("minecraft:missingno")) flowSprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath("minecraft","block/" + blockID + "_flow"));
+		TextureAtlasSprite flowSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath(MOD_ID,"block/" + blockID + "_flow"));
+		if (flowSprite.contents().name().toString().equals("minecraft:missingno")) flowSprite = blockAtlas.apply(ResourceLocation.fromNamespaceAndPath("minecraft","block/" + blockID + "_flow"));
 		fluidTextures.put("minecraft:block/"+blockID+"_flow", flowSprite);
 	}
 
