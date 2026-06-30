@@ -1,6 +1,7 @@
 package bigwater;
 
 import bigwater.config.SimpleConfig;
+import bigwater.util.Pair;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.*;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,7 +17,6 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public class BigWater implements ClientModInitializer {
 	public static float defaultScalant = 1.0f/defaultTextureScale;
 	public static boolean override = CONFIG.getOrDefault(VAR_OVERRIDE, false);
 
-	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
+	public static Map<String, Pair<Integer, Float>> textureScales = HashMap.newHashMap(8);
 	private static List<String> failedLookups = new LinkedList<>();
 
 	public static Map<String, TextureAtlasSprite> fluidTextures = HashMap.newHashMap(8);
@@ -72,7 +72,7 @@ public class BigWater implements ClientModInitializer {
 								int scale = json.get("textureScale").getAsInt();
 								String id = String.valueOf(entry.getKey());
 								id = id.substring("bigwater:config/".length(),id.length() - 5);
-								Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f/scale);
+								Pair<Integer, Float> values = new Pair<>(scale, 1.0f/scale);
 								textureScales.put("minecraft:" + id, values);
 								textureScales.put("minecraft:flowing_" + id, values);
 							} catch (Exception _){}
@@ -104,9 +104,9 @@ public class BigWater implements ClientModInitializer {
 		fluidTextures.put("minecraft:block/"+blockID+"_flow", flowSprite);
 	}
 
-	public static Tuple<Integer, Float> getTextureScale(String identifier){
+	public static Pair<Integer, Float> getTextureScale(String identifier){
 		if (override){
-			return new Tuple<>(defaultTextureScale, defaultScalant);
+			return new Pair<>(defaultTextureScale, defaultScalant);
 		}
 		if (textureScales.containsKey(identifier)){
 			return textureScales.get(identifier);
@@ -115,7 +115,7 @@ public class BigWater implements ClientModInitializer {
 			failedLookups.add(identifier);
 			LOGGER.info("[BigWater] Scale lookup failed for " + identifier + ", using config default");
 		}
-		return new Tuple<>(defaultTextureScale, defaultScalant);
+		return new Pair<>(defaultTextureScale, defaultScalant);
 	}
 
 	public static TextureAtlasSprite getTexture(String identifier){

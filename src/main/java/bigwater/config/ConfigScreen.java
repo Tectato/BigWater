@@ -37,8 +37,8 @@ public class ConfigScreen extends Screen {
             BigWater.setConfig(BigWater.VAR_DEFAULTSCALE, String.valueOf(Integer.valueOf(scaleInput.getValue())));
             BigWater.setConfig(BigWater.VAR_OVERRIDE, String.valueOf(overrideInput.selected()));
             BigWater.writeConfig();
-            minecraft.setScreen(parent);
-            minecraft.levelRenderer.allChanged();
+            minecraft.gui.setScreen(parent);
+            minecraft.levelExtractor.allChanged();
         }
     }
 

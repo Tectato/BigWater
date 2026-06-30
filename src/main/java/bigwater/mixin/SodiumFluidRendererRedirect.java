@@ -2,6 +2,7 @@ package bigwater.mixin;
 
 import bigwater.BigWater;
 import bigwater.access.FluidRendererAccess;
+import bigwater.util.Pair;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.caffeinemc.mods.sodium.client.model.quad.ModelQuadView;
 import net.caffeinemc.mods.sodium.client.model.quad.ModelQuadViewMutable;
@@ -15,7 +16,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.renderer.block.FluidRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,7 +41,7 @@ abstract class SodiumFluidRendererRedirect {
     private void writeTopQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
         FluidState state = ((FluidRendererAccess)instance).getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
-        Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
+        Pair<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
         BlockPos pos = ((FluidRendererAccess)instance).getPos();
         boolean mirrorU = false;
@@ -79,7 +79,7 @@ abstract class SodiumFluidRendererRedirect {
     private void writeBottomQuadRedirect(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip) {
         FluidState state = ((FluidRendererAccess)instance).getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
-        Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
+        Pair<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
         BlockPos pos = ((FluidRendererAccess)instance).getPos();
         writeFlatQuad(instance, builder, collector, material, offset, quad, facing, flip, getTexPos(pos.getX(), textureScale, false), getTexPos(pos.getZ(), textureScale, true), scaleData);
@@ -98,7 +98,7 @@ abstract class SodiumFluidRendererRedirect {
         Direction dir = accessor.getDirection();
         FluidState state = accessor.getFluidState();
         String id = state.getType().builtInRegistryHolder().getRegisteredName();
-        Tuple<Integer, Float> scaleData = BigWater.getTextureScale(id);
+        Pair<Integer, Float> scaleData = BigWater.getTextureScale(id);
         int textureScale = scaleData.getA();
         BlockPos pos = accessor.getPos();
         int uPos = 0;
@@ -133,7 +133,7 @@ abstract class SodiumFluidRendererRedirect {
 
 
 
-    private void writeFlatQuad(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip, int uPos, int vPos, Tuple<Integer, Float> scaleData) {
+    private void writeFlatQuad(DefaultFluidRenderer instance, ChunkModelBuilder builder, TranslucentGeometryCollector collector, Material material, BlockPos offset, ModelQuadView quad, ModelQuadFacing facing, boolean flip, int uPos, int vPos, Pair<Integer, Float> scaleData) {
         /* TODO: handle flowing textures properly
          * - side faces need to change mapping to be across X/Y or Z/Y
          * - top faces need to rotate mapping depending on flow direction
