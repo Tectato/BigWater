@@ -1,5 +1,6 @@
 package bigwater;
 
+import bigwater.util.Pair;
 import com.google.gson.JsonObject;
 
 import net.minecraft.client.Minecraft;
@@ -14,7 +15,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.Tuple;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -40,7 +40,7 @@ public class BigWater {
 	public static final String MOD_ID = "bigwater";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static Map<String, Tuple<Integer, Float>> textureScales = HashMap.newHashMap(8);
+	public static Map<String, Pair<Integer, Float>> textureScales = HashMap.newHashMap(8);
 	private static final List<String> failedLookups = new LinkedList<>();
 
 	public static Map<String, TextureAtlasSprite> fluidTextures = HashMap.newHashMap(8);
@@ -74,7 +74,7 @@ public class BigWater {
 					int scale = json.get("textureScale").getAsInt();
 					String id = String.valueOf(entry.getKey());
 					id = id.substring("bigwater:config/".length(),id.length() - 5);
-					Tuple<Integer, Float> values = new Tuple<>(scale, 1.0f/scale);
+					Pair<Integer, Float> values = new Pair<>(scale, 1.0f/scale);
 					textureScales.put("minecraft:" + id, values);
 					textureScales.put("minecraft:flowing_" + id, values);
 				} catch (Exception e){}
@@ -134,9 +134,9 @@ public class BigWater {
 		fluidTextures.put("minecraft:block/"+blockID+"_flow", flowSprite);
 	}
 
-	public static Tuple<Integer, Float> getTextureScale(String identifier){
+	public static Pair<Integer, Float> getTextureScale(String identifier){
 		if (Config.FORCE_FALLBACK_SCALE.get()){
-			return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
+			return new Pair<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 		}
 
 		if (textureScales.containsKey(identifier)){
@@ -146,7 +146,7 @@ public class BigWater {
 			failedLookups.add(identifier);
 			LOGGER.info("[BigWater] Scale lookup failed for {}, using config default", identifier);
 		}
-		return new Tuple<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
+		return new Pair<>(Config.FALLBACK_SCALE.get(), 1.0f/Config.FALLBACK_SCALE.get());
 	}
 
 	public static TextureAtlasSprite getTexture(String identifier){
